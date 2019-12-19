@@ -6,7 +6,7 @@ jobs:
       - GOPATH: /home/circleci/go
     docker:
       - image: circleci/golang:1.9
-    working_directory: /go/src/github.com/a-know/blog.a-know.me
+    working_directory: /go/src/github.com/kasumits/hatenadiary.jp
     steps:
       # GOPATH の設定。environment だけじゃ無理っぽい？ https://qiita.com/tomiyan/items/6142113011243c5b5cd1
       - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
@@ -20,7 +20,7 @@ jobs:
       - checkout
 
       - run:
-          name: Blog update check and create PR
+          name: echo Env parameters
           command: |
             echo "${CIRCLE_BRANCH}"
             echo "${CIRCLE_COMPARE_URL}"
