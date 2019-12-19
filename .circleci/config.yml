@@ -1,7 +1,7 @@
 version: 2
 jobs:
   # ジョブ名称は任意のものを付けられる。`build` という名前だとデフォルトジョブとして認識される？（自信なし）
-  update_check:
+  build:
     environment:
       - GOPATH: /home/circleci/go
     docker:
