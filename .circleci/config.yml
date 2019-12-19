@@ -15,7 +15,8 @@ jobs:
       # blogsync 用の config ファイルの書き出し。コロンをエスケープするために使ったダブルクォートを tr コマンドで無理矢理削除している
       - run: echo -e "kasumits.hatenadiary.jp\":\"\n  username\":\" kasumits\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
       # blogsync の go get
-      - run: go get github.com/motemen/blogsync
+      - run: git clone https://github.com/motemen/blogsync.git
+      - run: go build -o blogsync
       # リポジトリからチェックアウト
       - checkout
 
