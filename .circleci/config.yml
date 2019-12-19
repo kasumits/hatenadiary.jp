@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  # ジョブ名称は任意のものを付けられる。`build` という名前だとデフォルトジョブとして認識される？（自信なし）
+  update_check:
+    environment:
+      - GOPATH: /home/circleci/go
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/a-know/blog.a-know.me
+    steps:
+      # GOPATH の設定。environment だけじゃ無理っぽい？ https://qiita.com/tomiyan/items/6142113011243c5b5cd1
+      - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
+      # blogsync 用の config ファイルを置く場所の作成
+      - run: mkdir -p ~/.config/blogsync
+      # blogsync 用の config ファイルの書き出し。コロンをエスケープするために使ったダブルクォートを tr コマンドで無理矢理削除している
+      - run: echo -e "kasumits.hatenadiary.jp\":\"\n  username\":\" kasumits\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
+      # blogsync の go get
+      - run: go get github.com/motemen/blogsync
+      # リポジトリからチェックアウト
+      - checkout
+
+      - run:
+          name: Blog update check and create PR
+          command: |
+            echo "${CIRCLE_BRANCH}"
+            echo "${CIRCLE_COMPARE_URL}"
