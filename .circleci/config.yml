@@ -24,7 +24,7 @@ jobs:
       - run: git clone https://github.com/motemen/go-wsse.git /go/src/github.com/motemen/go-wsse
       # ローカルで試したときもこのurfave/cliのおそらくバージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
       - run: git clone https://github.com/urfave/cli.git /go/src/github.com/urfave/cli
-      - run: cd /go/src/github.com/motemen/blogsync && go build -o blogsync ./blogsync
+      - run: cd /go/src/github.com/motemen/blogsync && go build -o blogsync
       # リポジトリからチェックアウト
       - checkout
 
