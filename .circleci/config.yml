@@ -23,8 +23,8 @@ jobs:
       - run: go get github.com/motemen/go-wsse
       # - run: go get github.com/cpuguy83/go-md2man
       # ローカルで試したときもこのurfave/cliの(おそらく)バージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
-      # - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
-      - run: go get github.com/urfave/cli
+      - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
+      # - run: go get github.com/urfave/cli
 
       - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
       # - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
