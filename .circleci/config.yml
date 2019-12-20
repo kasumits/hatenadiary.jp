@@ -16,14 +16,23 @@ jobs:
       - run: echo -e "${HATEBLO_URL}\":\"\n  username\":\" ${HATEBLO_USERNAME}\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
       # ここまで
 
+      # go get github.com/motemen/blogsync がパッケージ依存の関係でエラーになるので、パッケージを個別に入れてからbuildする
       - run: go get gopkg.in/yaml.v2
-      # blogsync の go get...がパッケージ依存の関係でエラーになるので、git cloneで全部入れてからbuildする
-      - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
-      - run: git clone https://github.com/motemen/go-colorine.git ${GOPATH}/src/github.com/motemen/go-colorine
-      - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
-      - run: git clone https://github.com/motemen/go-wsse.git ${GOPATH}/src/github.com/motemen/go-wsse
+      - run: go get github.com/motemen/go-colorine
+      - run: go get github.com/motemen/go-loghttp
+      - run: go get github.com/motemen/go-wsse
       # ローカルで試したときもこのurfave/cliのおそらくバージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
-      - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
+      - run: go get github.com/urfave/cli
+
+      - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
+      # - run: git clone https://github.com/motemen/go-colorine.git ${GOPATH}/src/github.com/motemen/go-colorine
+      # - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
+      # - run: git clone https://github.com/motemen/go-wsse.git ${GOPATH}/src/github.com/motemen/go-wsse
+      
+      # - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
+      # - run: git clone https://github.com/cpuguy83/go-md2man/v2/md2man.git ${GOPATH}/src/github.com/cpuguy83/go-md2man/v2/md2man
+      # - run: git clone https://github.comdaviddengcn/go-colortext.git ${GOPATH}/src/github.com/daviddengcn/go-colortext
+      # - run: git clone https://github.com/motemen/go-nuts/roundtime.git ${GOPATH}/src/github.com/motemen/go-nuts/roundtime
       - run: cd ${GOPATH}/src/github.com/motemen/blogsync && go build -o blogsync
       # リポジトリからチェックアウト
       - checkout
