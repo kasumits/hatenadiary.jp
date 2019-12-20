@@ -18,20 +18,20 @@ jobs:
 
       - run: go get gopkg.in/yaml.v2
       # blogsync の go get...がパッケージ依存の関係でエラーになるので、git cloneで全部入れてからbuildする
-      - run: git clone https://github.com/motemen/blogsync.git /go/src/github.com/motemen/blogsync
-      - run: git clone https://github.com/motemen/go-colorine.git /go/src/github.com/motemen/go-colorine
-      - run: git clone https://github.com/motemen/go-loghttp.git /go/src/github.com/motemen/go-loghttp
-      - run: git clone https://github.com/motemen/go-wsse.git /go/src/github.com/motemen/go-wsse
+      - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
+      - run: git clone https://github.com/motemen/go-colorine.git ${GOPATH}/src/github.com/motemen/go-colorine
+      - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
+      - run: git clone https://github.com/motemen/go-wsse.git ${GOPATH}/src/github.com/motemen/go-wsse
       # ローカルで試したときもこのurfave/cliのおそらくバージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
-      - run: git clone https://github.com/urfave/cli.git /go/src/github.com/urfave/cli
-      - run: cd /go/src/github.com/motemen/blogsync && go build -o blogsync
+      - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
+      - run: cd ${GOPATH}/src/github.com/motemen/blogsync && go build -o blogsync
       # リポジトリからチェックアウト
       - checkout
 
       - run:
           name: pull blog entries
           command: |
-            cd /go/src/github.com/motemen/blogsync && ./blogsync pull ${HATEBLO_URL}
+            cd ${GOPATH}/src/github.com/motemen/blogsync && ./blogsync pull ${HATEBLO_URL}
 
       - run:
           name: echo Env parameters
