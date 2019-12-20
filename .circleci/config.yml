@@ -13,20 +13,25 @@ jobs:
       # blogsync 用の config ファイルを置く場所の作成
       - run: mkdir -p ~/.config/blogsync
       # blogsync 用の config ファイルの書き出し。コロンをエスケープするために使ったダブルクォートを tr コマンドで無理矢理削除している
-      - run: echo -e "kasumits.hatenadiary.jp\":\"\n  username\":\" kasumits\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
+      - run: echo -e "${HATEBLO_URL}\":\"\n  username\":\" ${HATEBLO_USERNAME}\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
       # ここまで
 
       - run: go get gopkg.in/yaml.v2
       # blogsync の go get...がパッケージ依存の関係でエラーになるので、git cloneで全部入れてからbuildする
-      - run: git clone https://github.com/motemen/blogsync.git
-      - run: git clone https://github.com/motemen/go-colorine.git
-      - run: git clone https://github.com/motemen/go-loghttp.git
-      - run: git clone https://github.com/motemen/go-wsse.git
+      - run: git clone https://github.com/motemen/blogsync.git /go/src/github.com/motemen/blogsync
+      - run: git clone https://github.com/motemen/go-colorine.git /go/src/github.com/motemen/go-colorine
+      - run: git clone https://github.com/motemen/go-loghttp.git /go/src/github.com/motemen/go-loghttp
+      - run: git clone https://github.com/motemen/go-wsse.git /go/src/github.com/motemen/go-wsse
       # ローカルで試したときもこのurfave/cliのおそらくバージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
-      - run: git clone https://github.com/urfave/cli.git
+      - run: git clone https://github.com/urfave/cli.git /go/src/github.com/urfave/cli
       - run: cd /go/src/github.com/motemen/blogsync && go build -o blogsync ./blogsync
       # リポジトリからチェックアウト
       - checkout
+
+      - run:
+          name: pull blog entries
+          command: |
+            cd /go/src/github.com/motemen/blogsync && ./blogsync pull ${HATEBLO_URL}
 
       - run:
           name: echo Env parameters
