@@ -22,7 +22,7 @@ jobs:
       - run: go get github.com/motemen/go-loghttp
       - run: go get github.com/motemen/go-wsse
       - run: go get github.com/cpuguy83/go-md2man
-      - run: go get github.com/urfave/cli/v2
+      - run: GO111MODULE=on go get github.com/urfave/cli/v2
       # ローカルで試したときもこのurfave/cliの(おそらく)バージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
       # - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
 
