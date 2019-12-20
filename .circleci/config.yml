@@ -16,7 +16,7 @@ jobs:
       - run: echo -e "kasumits.hatenadiary.jp\":\"\n  username\":\" kasumits\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
       # ここまで
 
-      - run: go get gopkgi.in/yaml.v2
+      - run: go get gopkg.in/yaml.v2
       # blogsync の go get...がパッケージ依存の関係でエラーになるので、git cloneで全部入れてからbuildする
       - run: git clone https://github.com/motemen/blogsync.git
       - run: git clone https://github.com/motemen/go-colorine.git
