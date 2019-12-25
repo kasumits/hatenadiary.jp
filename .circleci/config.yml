@@ -35,7 +35,7 @@ jobs:
       # - run: git clone https://github.com/motemen/go-nuts/roundtime.git ${GOPATH}/src/github.com/motemen/go-nuts/roundtime
       # - run: cd ${GOPATH}/src/github.com/motemen/blogsync && go build -o blogsync
 
-      run: go get github.com/motemen/blogsync
+      - run: go get github.com/motemen/blogsync
       # リポジトリからチェックアウト
       - checkout
 
