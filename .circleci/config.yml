@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  prepare:
     environment:
       - GOPATH: /home/circleci/go
     docker:
@@ -42,6 +42,58 @@ jobs:
             blogsync pull ${HATEBLO_URL}
 
       - run:
-          name: git diff
+          name: blog update check
           command: |
-            git diff origin/master...${CIRCLE_BRANCH}
+            git status -sb
+
+  build:
+    environment:
+      - GOPATH: /home/circleci/go
+    docker:
+      - image: circleci/golang:latest
+    working_directory: /go/src/github.com/kasumits/hatenadiary.jp
+    steps:
+
+      - run: GO111MODULE=on go get github.com/motemen/blogsync
+      # リポジトリからチェックアウト
+      - checkout
+      - run:
+          name: pull blog entries
+          command: |
+            blogsync pull ${HATEBLO_URL}
+
+      - run:
+          name: blog update check
+          command: |
+            # リポジトリにない内容のものが pull されてきているかどうかを git status で判定。see also http://made.livesense.co.jp/entry/2017/11/07/090000
+            if [ -n "`git status -sb | grep entry`" ]; then
+              git status -sb
+              # これ以降はブランチを作って PR を作成、送信している
+              BRANCH=blog-update-`date -u "+%Y%m%d"`
+              git config --global user.email ${MY_EMAIL}
+              git config --global user.name ${MY_NAME}
+              git checkout -b ${BRANCH}
+              git add .
+              git commit -m "Automatic blog update `date -u '+%Y-%m-%d'`"
+              if git push ${CIRCLE_REPOSITORY_URL} ${BRANCH}
+              then
+                curl \
+                  --header "Accept: application/vnd.github.v3+json" \
+                  --data "{\"title\": \"${BRANCH}\", \"head\": \"${CIRCLE_PROJECT_USERNAME}:${BRANCH}\", \"base\":\"${CIRCLE_BRANCH}\" }" \
+                  https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls?access_token=${GITHUB_ACCESS_TOKEN}
+              fi
+            fi
+
+
+
+workflows:
+  version: 2
+  prepare_and_build:
+    jobs:
+        - prepare
+      - build:
+          requires:
+            - prepare
+          filters:
+            branches:
+              only: master
