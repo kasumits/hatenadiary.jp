@@ -4,7 +4,7 @@ jobs:
     environment:
       - GOPATH: /home/circleci/go
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/kasumits/hatenadiary.jp
     steps:
       # ここから https://blog.a-know.me/entry/2018/03/04/215345 の記述をそのまま拝借します
@@ -35,7 +35,7 @@ jobs:
       # - run: git clone https://github.com/motemen/go-nuts/roundtime.git ${GOPATH}/src/github.com/motemen/go-nuts/roundtime
       # - run: cd ${GOPATH}/src/github.com/motemen/blogsync && go build -o blogsync
 
-      - run: go get github.com/motemen/blogsync
+      - run: GO111MODULE=on go get github.com/motemen/blogsync
       # リポジトリからチェックアウト
       - checkout
 
