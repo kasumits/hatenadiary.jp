@@ -90,7 +90,7 @@ workflows:
   version: 2
   prepare_and_build:
     jobs:
-        - prepare
+      - prepare
       - build:
           requires:
             - prepare
