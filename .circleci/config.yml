@@ -1,26 +1,99 @@
 version: 2
 jobs:
-  # ジョブ名称は任意のものを付けられる。`build` という名前だとデフォルトジョブとして認識される？（自信なし）
-  update_check:
+  prepare:
     environment:
       - GOPATH: /home/circleci/go
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:latest
     working_directory: /go/src/github.com/kasumits/hatenadiary.jp
     steps:
+      # ここから https://blog.a-know.me/entry/2018/03/04/215345 の記述をそのまま拝借します
       # GOPATH の設定。environment だけじゃ無理っぽい？ https://qiita.com/tomiyan/items/6142113011243c5b5cd1
-      - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
+      - run: echo 'export PATH=${PATH}:${GOPATH}/bin' >> $BASH_ENV
       # blogsync 用の config ファイルを置く場所の作成
       - run: mkdir -p ~/.config/blogsync
       # blogsync 用の config ファイルの書き出し。コロンをエスケープするために使ったダブルクォートを tr コマンドで無理矢理削除している
-      - run: echo -e "kasumits.hatenadiary.jp\":\"\n  username\":\" kasumits\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
-      # blogsync の go get
-      - run: go get github.com/motemen/blogsync
+      - run: echo -e "${HATEBLO_URL}\":\"\n  username\":\" ${HATEBLO_USERNAME}\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
+      # ここまで
+
+#      - run: go get gopkg.in/yaml.v2
+#      - run: go get github.com/motemen/go-colorine
+#      - run: go get github.com/motemen/go-loghttp
+#      - run: go get github.com/motemen/go-wsse
+#      - run: go get github.com/cpuguy83/go-md2man
+#      - run: GO111MODULE=on go get github.com/urfave/cli/v2
+
+      # - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
+      # - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
+      # - run: git clone https://github.com/motemen/go-wsse.git ${GOPATH}/src/github.com/motemen/go-wsse
+      
+      # - run: git clone https://github.com/cpuguy83/go-md2man/v2/md2man.git ${GOPATH}/src/github.com/cpuguy83/go-md2man/v2/md2man
+      # - run: git clone https://github.comdaviddengcn/go-colortext.git ${GOPATH}/src/github.com/daviddengcn/go-colortext
+      # - run: git clone https://github.com/motemen/go-nuts/roundtime.git ${GOPATH}/src/github.com/motemen/go-nuts/roundtime
+      # - run: cd ${GOPATH}/src/github.com/motemen/blogsync && go build -o blogsync
+
+      - run: GO111MODULE=on go get github.com/motemen/blogsync
       # リポジトリからチェックアウト
       - checkout
 
       - run:
-          name: echo Env parameters
+          name: pull blog entries
           command: |
-            echo "${CIRCLE_BRANCH}"
-            echo "${CIRCLE_COMPARE_URL}"
+            blogsync pull ${HATEBLO_URL}
+
+      - run:
+          name: blog update check
+          command: |
+            git status -sb
+
+  build:
+    environment:
+      - GOPATH: /home/circleci/go
+    docker:
+      - image: circleci/golang:latest
+    working_directory: /go/src/github.com/kasumits/hatenadiary.jp
+    steps:
+
+      - run: GO111MODULE=on go get github.com/motemen/blogsync
+      # リポジトリからチェックアウト
+      - checkout
+      - run:
+          name: pull blog entries
+          command: |
+            blogsync pull ${HATEBLO_URL}
+
+      - run:
+          name: blog update check
+          command: |
+            # リポジトリにない内容のものが pull されてきているかどうかを git status で判定。see also http://made.livesense.co.jp/entry/2017/11/07/090000
+            if [ -n "`git status -sb | grep entry`" ]; then
+              git status -sb
+              # これ以降はブランチを作って PR を作成、送信している
+              BRANCH=blog-update-`date -u "+%Y%m%d"`
+              git config --global user.email ${MY_EMAIL}
+              git config --global user.name ${MY_NAME}
+              git checkout -b ${BRANCH}
+              git add .
+              git commit -m "Automatic blog update `date -u '+%Y-%m-%d'`"
+              if git push ${CIRCLE_REPOSITORY_URL} ${BRANCH}
+              then
+                curl \
+                  --header "Accept: application/vnd.github.v3+json" \
+                  --data "{\"title\": \"${BRANCH}\", \"head\": \"${CIRCLE_PROJECT_USERNAME}:${BRANCH}\", \"base\":\"${CIRCLE_BRANCH}\" }" \
+                  https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls?access_token=${GITHUB_ACCESS_TOKEN}
+              fi
+            fi
+
+
+
+workflows:
+  version: 2
+  prepare_and_build:
+    jobs:
+      - prepare
+      - build:
+          requires:
+            - prepare
+          filters:
+            branches:
+              only: master
