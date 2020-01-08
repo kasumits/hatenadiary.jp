@@ -4,27 +4,24 @@ jobs:
     environment:
       - GOPATH: /home/circleci/go
     docker:
-      - image: circleci/golang:1.13
+      - image: circleci/golang:latest
     working_directory: /go/src/github.com/kasumits/hatenadiary.jp
     steps:
       # ここから https://blog.a-know.me/entry/2018/03/04/215345 の記述をそのまま拝借します
       # GOPATH の設定。environment だけじゃ無理っぽい？ https://qiita.com/tomiyan/items/6142113011243c5b5cd1
-      - run: echo 'export PATH=${GOPATH}/bin/:${PATH}' >> $BASH_ENV
+      - run: echo 'export PATH=${PATH}:${GOPATH}/bin' >> $BASH_ENV
       # blogsync 用の config ファイルを置く場所の作成
       - run: mkdir -p ~/.config/blogsync
       # blogsync 用の config ファイルの書き出し。コロンをエスケープするために使ったダブルクォートを tr コマンドで無理矢理削除している
       - run: echo -e "${HATEBLO_URL}\":\"\n  username\":\" ${HATEBLO_USERNAME}\n  password\":\" ${HATEBLO_PASSWORD}\n  local_root\":\" /go/src/github.com/kasumits/hatenadiary.jp\n  omit_domain\":\" true" | tr -d \" >> ~/.config/blogsync/config.yaml
       # ここまで
 
-      # go get github.com/motemen/blogsync がパッケージ依存の関係でエラーになるので、パッケージを個別に入れてからbuildする
-      # - run: go get gopkg.in/yaml.v2
-      # - run: go get github.com/motemen/go-colorine
-      # - run: go get github.com/motemen/go-loghttp
-      # - run: go get github.com/motemen/go-wsse
-      # - run: go get github.com/cpuguy83/go-md2man
-      # ローカルで試したときもこのurfave/cliの(おそらく)バージョン違いが元凶でgo getができませんでした。 cf) https://github.com/swaggo/swag/issues/556
-      # - run: git clone https://github.com/urfave/cli.git ${GOPATH}/src/github.com/urfave/cli
-      # - run: go get github.com/urfave/cli
+#      - run: go get gopkg.in/yaml.v2
+#      - run: go get github.com/motemen/go-colorine
+#      - run: go get github.com/motemen/go-loghttp
+#      - run: go get github.com/motemen/go-wsse
+#      - run: go get github.com/cpuguy83/go-md2man
+#      - run: GO111MODULE=on go get github.com/urfave/cli/v2
 
       # - run: git clone https://github.com/motemen/blogsync.git ${GOPATH}/src/github.com/motemen/blogsync
       # - run: git clone https://github.com/motemen/go-loghttp.git ${GOPATH}/src/github.com/motemen/go-loghttp
@@ -42,7 +39,7 @@ jobs:
       - run:
           name: pull blog entries
           command: |
-            cd ${GOPATH}/src/github.com/motemen/blogsync && ./blogsync pull ${HATEBLO_URL}
+            blogsync pull ${HATEBLO_URL}
 
       - run:
           name: git diff
